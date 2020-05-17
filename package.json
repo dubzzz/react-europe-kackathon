@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.5",
     "@progress/kendo-data-query": "^1.5.3",
     "@progress/kendo-drawing": "^1.7.0",
     "@progress/kendo-react-buttons": "^3.14.0",
@@ -23,6 +24,8 @@
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "@types/styled-components": "^5.1.0",
+    "apollo-boost": "^0.4.9",
+    "graphql": "^15.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",

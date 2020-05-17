@@ -1,4 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import ApolloClient, { gql } from "apollo-boost";
+
+const CONNECTED_USER = gql`
+  {
+    viewer {
+      login
+    }
+  }
+`;
 
 export enum AuthenticationStatus {
   None = "None",
@@ -7,24 +16,45 @@ export enum AuthenticationStatus {
 }
 
 export function useAuthentication() {
-  // TODO Interdependant states, move to useReducer
   const [status, setStatus] = useState(AuthenticationStatus.None);
   const [token, setToken] = useState("");
+  const client = useMemo(
+    () =>
+      new ApolloClient({
+        uri: "https://api.github.com/graphql",
+        request: (operation) => {
+          operation.setContext({
+            headers: {
+              authorization: token ? `Bearer ${token}` : "",
+            },
+          });
+        },
+      }),
+    [token]
+  );
 
   useEffect(() => {
     if (token === "") {
       return;
     }
 
+    let canceled = false;
     setStatus(AuthenticationStatus.Connection);
 
-    // Simulate API call
-    const timeoutToken = setTimeout(
-      () => setStatus(AuthenticationStatus.Connected),
-      1000
+    client.query({ query: CONNECTED_USER }).then(
+      () => {
+        if (canceled) return;
+        setStatus(AuthenticationStatus.Connected);
+      },
+      () => {
+        if (canceled) return;
+        setStatus(AuthenticationStatus.None);
+      }
     );
-    return () => clearTimeout(timeoutToken);
-  }, [token]);
+    return () => {
+      canceled = true;
+    };
+  }, [client, token]);
 
-  return { token, status, updateToken: setToken };
+  return { client, status, updateToken: setToken };
 }

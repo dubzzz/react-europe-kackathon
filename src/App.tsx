@@ -4,9 +4,10 @@ import {
   AuthenticationStatus,
 } from "./hooks/Authentication";
 import AuthenticationDialog from "./components/AuthenticationDialog";
+import { ApolloProvider } from "@apollo/react-hooks";
 
 function App() {
-  const { token, status, updateToken } = useAuthentication();
+  const { client, status, updateToken } = useAuthentication();
 
   if (status !== AuthenticationStatus.Connected) {
     return (
@@ -18,7 +19,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <ApolloProvider client={client}>
       <header className="App-header">
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
@@ -32,7 +33,7 @@ function App() {
           Learn React
         </a>
       </header>
-    </div>
+    </ApolloProvider>
   );
 }
 
