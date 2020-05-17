@@ -1,11 +1,20 @@
-import React, { useState } from "react";
-import AuthenticationDialog from "./AuthenticationDialog";
+import React from "react";
+import {
+  useAuthentication,
+  AuthenticationStatus,
+} from "./hooks/Authentication";
+import AuthenticationDialog from "./components/AuthenticationDialog";
 
 function App() {
-  const [githubKey, setGithubKey] = useState<string | undefined>(undefined);
+  const { token, status, updateToken } = useAuthentication();
 
-  if (githubKey === undefined) {
-    return <AuthenticationDialog onTokenChange={setGithubKey} />;
+  if (status !== AuthenticationStatus.Connected) {
+    return (
+      <AuthenticationDialog
+        readOnly={status === AuthenticationStatus.Connection}
+        onTokenChange={updateToken}
+      />
+    );
   }
 
   return (

@@ -7,13 +7,14 @@ import { Input } from "@progress/kendo-react-inputs";
 import styled from "styled-components";
 
 type Props = {
+  readOnly: boolean;
   onTokenChange: (token: string) => void;
   className?: string;
 };
 
 function AuthenticationDialogInternal(props: Props) {
-  const { onTokenChange, className } = props;
-  const [githubKey, setGithubKey] = useState<string | undefined>(undefined);
+  const { readOnly, onTokenChange, className } = props;
+  const [githubKey, setGithubKey] = useState("");
 
   return (
     <Dialog
@@ -28,6 +29,8 @@ function AuthenticationDialogInternal(props: Props) {
             id="token-input"
             value={githubKey}
             onChange={(e) => setGithubKey(e.target.value)}
+            disabled={readOnly}
+            readOnly={readOnly}
           />
         </FieldWrapper>
       </FormElement>
@@ -44,7 +47,12 @@ function AuthenticationDialogInternal(props: Props) {
         .
       </p>
       <DialogActionsBar>
-        <Button>Send</Button>
+        <Button
+          onClick={() => onTokenChange(githubKey)}
+          disabled={readOnly || githubKey === ""}
+        >
+          Send
+        </Button>
       </DialogActionsBar>
     </Dialog>
   );
