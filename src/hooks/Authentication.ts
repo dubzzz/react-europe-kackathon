@@ -15,9 +15,13 @@ export enum AuthenticationStatus {
   Connected = "Connected",
 }
 
+const LocalStorageKey = "github-token";
+
 export function useAuthentication() {
   const [status, setStatus] = useState(AuthenticationStatus.None);
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(
+    localStorage.getItem(LocalStorageKey) || ""
+  );
   const client = useMemo(
     () =>
       new ApolloClient({
@@ -35,6 +39,7 @@ export function useAuthentication() {
 
   useEffect(() => {
     if (token === "") {
+      localStorage.removeItem(LocalStorageKey);
       return;
     }
 
@@ -44,10 +49,12 @@ export function useAuthentication() {
     client.query({ query: CONNECTED_USER }).then(
       () => {
         if (canceled) return;
+        localStorage.setItem(LocalStorageKey, token);
         setStatus(AuthenticationStatus.Connected);
       },
       () => {
         if (canceled) return;
+        localStorage.removeItem(LocalStorageKey);
         setStatus(AuthenticationStatus.None);
       }
     );
