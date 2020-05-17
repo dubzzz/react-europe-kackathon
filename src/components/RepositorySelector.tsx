@@ -52,7 +52,6 @@ function RepositorySelectorInternal(props: Props) {
           // We already received more recent results
           return;
         }
-        console.log(data);
         setSuggestions(
           data.search.edges.map(({ node }) => ({
             owner: node.owner.login,

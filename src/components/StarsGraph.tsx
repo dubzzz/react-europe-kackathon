@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { gql } from "apollo-boost";
+import { gql, ApolloQueryResult } from "apollo-boost";
 import { useApolloClient } from "@apollo/react-hooks";
 import styled from "styled-components";
 import { Repository } from "../types/Repository";
@@ -41,11 +41,11 @@ function StarsGraphInternal(props: Props) {
       let cursor: string | undefined = undefined;
 
       while (true) {
-        const out: any = await client.query<{
+        const out: ApolloQueryResult<{
           repository: {
             stargazers: { edges: { starredAt: string; cursor: string }[] };
           };
-        }>({
+        }> = await client.query({
           query: REPO_STARS,
           variables: { owner: repository.owner, repo: repository.repo, cursor },
         });
@@ -59,7 +59,7 @@ function StarsGraphInternal(props: Props) {
         // update our stars
         setStars((previousStars) => [
           ...previousStars,
-          ...stargazers.map((r: any) => new Date(r.starredAt)),
+          ...stargazers.map((r) => new Date(r.starredAt)),
         ]);
 
         // leave the loop, no more results expected
@@ -75,7 +75,7 @@ function StarsGraphInternal(props: Props) {
     fetchAll();
   }, [client, repository]);
 
-  return <div className={className}>{stars.length}</div>;
+  return <div className={className}>{stars.length} stars</div>;
 }
 
 const StarsGraph = styled(StarsGraphInternal)``;
