@@ -33,7 +33,7 @@ function App() {
         onRepositorySelected={(repo) => setRepository(repo)}
         onRepositoryRemoved={() => setRepository(undefined)}
       />
-      {repository && <StarsGraph repository={repository} />}
+      {repository && <StarsGraph repository={repository} type="sum" />}
     </ApolloProvider>
   );
 }

@@ -11,6 +11,7 @@ import {
   ChartCategoryAxis,
   ChartCategoryAxisItem,
 } from "@progress/kendo-react-charts";
+import LoadingSpinner from "./LoadingSpinner";
 
 const REPO_STARS = gql`
   query RepoStars($owner: String!, $repo: String!, $cursor: String) {
@@ -31,12 +32,14 @@ const REPO_STARS = gql`
 
 type Props = {
   repository: Repository;
+  type: "by-month" | "sum";
 };
 
 function StarsGraphInternal(props: Props) {
-  const { repository } = props;
+  const { repository, type } = props;
 
   const currentRepositoryRef = useRef(repository);
+  const [loading, setLoading] = useState(false);
   const [stars, setStars] = useState([] as Date[]);
   const { categories, data } = useMemo(() => {
     const orderedStars = [...stars].sort((a, b) => +a - +b);
@@ -50,14 +53,15 @@ function StarsGraphInternal(props: Props) {
         count[count.length - 1] += 1;
       } else {
         categories.push(starCategory);
-        count.push(1);
+        if (type === "by-month") count.push(1);
+        else if (type === "sum") count.push((count[count.length - 1] || 0) + 1);
       }
     }
     return {
       categories,
       data: count,
     };
-  }, [stars]);
+  }, [stars, type]);
 
   const client = useApolloClient();
 
@@ -66,6 +70,7 @@ function StarsGraphInternal(props: Props) {
     setStars([]);
 
     const fetchAll = async () => {
+      setLoading(true);
       let cursor: string | undefined = undefined;
 
       while (true) {
@@ -93,6 +98,7 @@ function StarsGraphInternal(props: Props) {
         // leave the loop, no more results expected
         // it was the last page
         if (stargazers.length < 100) {
+          setLoading(false);
           return;
         }
 
@@ -103,10 +109,21 @@ function StarsGraphInternal(props: Props) {
     fetchAll();
   }, [client, repository]);
 
+  if (loading) {
+    return (
+      <div>
+        History for {stars.length} stars have been fetched
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <Chart>
       <ChartTooltip />
-      <ChartTitle text="Stars history by month" />
+      <ChartTitle
+        text={type === "by-month" ? "Stars history by month" : "Stars history"}
+      />
       <ChartCategoryAxis>
         <ChartCategoryAxisItem
           title={{ text: "Months" }}
