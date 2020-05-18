@@ -15,3 +15,7 @@ https://help.github.com/en/github/authenticating-to-github/creating-a-personal-a
 3. Paste the token
 
 4. Update the repository if you want to see another one - _please note that stars are retrived 100 by 100 so big repositories can be very long to analyze_
+
+## Preview
+
+![Preview](https://github.com/dubzzz/react-europe-kackathon/blob/master/stars-history.gif)
