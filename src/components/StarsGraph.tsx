@@ -1,8 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { gql, ApolloQueryResult } from "apollo-boost";
 import { useApolloClient } from "@apollo/react-hooks";
-import styled from "styled-components";
 import { Repository } from "../types/Repository";
+import {
+  Chart,
+  ChartTooltip,
+  ChartTitle,
+  ChartSeries,
+  ChartSeriesItem,
+  ChartCategoryAxis,
+  ChartCategoryAxisItem,
+} from "@progress/kendo-react-charts";
 
 const REPO_STARS = gql`
   query RepoStars($owner: String!, $repo: String!, $cursor: String) {
@@ -23,14 +31,34 @@ const REPO_STARS = gql`
 
 type Props = {
   repository: Repository;
-  className?: string;
 };
 
 function StarsGraphInternal(props: Props) {
-  const { repository, className } = props;
+  const { repository } = props;
 
   const currentRepositoryRef = useRef(repository);
   const [stars, setStars] = useState([] as Date[]);
+  const { categories, data } = useMemo(() => {
+    const orderedStars = [...stars].sort((a, b) => +a - +b);
+    const categories: string[] = [];
+    const count: number[] = [];
+    for (const newStarDate of orderedStars) {
+      const monthLabel = String(newStarDate.getMonth() + 1).padStart(2, "0");
+      const yearLabel = String(newStarDate.getFullYear()).substr(2);
+      const starCategory = `${monthLabel} / ${yearLabel}`;
+      if (categories[categories.length - 1] === starCategory) {
+        count[count.length - 1] += 1;
+      } else {
+        categories.push(starCategory);
+        count.push(1);
+      }
+    }
+    return {
+      categories,
+      data: count,
+    };
+  }, [stars]);
+
   const client = useApolloClient();
 
   useEffect(() => {
@@ -75,9 +103,23 @@ function StarsGraphInternal(props: Props) {
     fetchAll();
   }, [client, repository]);
 
-  return <div className={className}>{stars.length} stars</div>;
+  return (
+    <Chart>
+      <ChartTooltip />
+      <ChartTitle text="Stars history by month" />
+      <ChartCategoryAxis>
+        <ChartCategoryAxisItem
+          title={{ text: "Months" }}
+          categories={categories}
+        />
+      </ChartCategoryAxis>
+      <ChartSeries>
+        <ChartSeriesItem type="line" data={data} />
+      </ChartSeries>
+    </Chart>
+  );
 }
 
-const StarsGraph = styled(StarsGraphInternal)``;
+const StarsGraph = StarsGraphInternal;
 
 export default StarsGraph;
