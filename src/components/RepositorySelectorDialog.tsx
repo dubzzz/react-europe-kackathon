@@ -7,6 +7,7 @@ import { Input } from "@progress/kendo-react-inputs";
 import { Button } from "@progress/kendo-react-buttons";
 import styled from "styled-components";
 import { Repository } from "../types/Repository";
+import { Dialog } from "@progress/kendo-react-dialogs";
 
 const SEARCH_REPO = gql`
   query Search($query: String!) {
@@ -27,11 +28,12 @@ const SEARCH_REPO = gql`
 
 type Props = {
   onRepositorySelected: (repo: Repository) => void;
+  onClose: () => void;
   className?: string;
 };
 
-function RepositorySelectorInternal(props: Props) {
-  const { onRepositorySelected, className } = props;
+function RepositorySelectorDialogInternal(props: Props) {
+  const { onRepositorySelected, onClose, className } = props;
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([] as Repository[]);
 
@@ -62,17 +64,18 @@ function RepositorySelectorInternal(props: Props) {
   }, [client, query]);
 
   return (
-    <div className={className}>
+    <Dialog title="Select repository" className={className} onClose={onClose}>
       <FormElement>
         <FieldWrapper>
           <Label editorId="repo-selector-input">Repository name:&nbsp;</Label>
           <Input value={query} onChange={(e) => setQuery(e.target.value)} />
         </FieldWrapper>
       </FormElement>
-      <div>
+      <div className="RepositorySelectorDialog-options">
         {suggestions.map((s) => (
           <Button
             key={`${s.owner}/${s.repo}`}
+            aria-label={`Select repository ${s.repo} by ${s.owner}`}
             onClick={() => onRepositorySelected(s)}
           >
             <code>{s.owner}</code>&nbsp;/&nbsp;
@@ -80,10 +83,22 @@ function RepositorySelectorInternal(props: Props) {
           </Button>
         ))}
       </div>
-    </div>
+    </Dialog>
   );
 }
 
-const RepositorySelector = styled(RepositorySelectorInternal)``;
+const RepositorySelectorDialog = styled(RepositorySelectorDialogInternal)`
+  & .RepositorySelectorDialog-options {
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    width: 80vw;
+    max-width: 50rem;
+  }
+  & .RepositorySelectorDialog-options button code {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`;
 
-export default RepositorySelector;
+export default RepositorySelectorDialog;
